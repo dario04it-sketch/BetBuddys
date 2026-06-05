@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>BetBuddy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;}
+:root{
+  --bg:#090909;
+  --bg2:#0f0f0f;
+  --bg3:#161616;
+  --purple:#9b5cf6;
+  --purple2:#7c3aed;
+  --purple-dim:#2d1b69;
+  --purple-glow:rgba(155,92,246,0.15);
+  --text:#f0eef8;
+  --text2:#a89ec4;
+  --text3:#5a5272;
+  --green:#22c55e;
+  --red:#ef4444;
+  --border:rgba(155,92,246,0.2);
+  --border2:rgba(155,92,246,0.08);
+}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;min-height:100dvh;overflow-x:hidden;}
+h1,h2,h3,.display{font-family:'Syne',sans-serif;}
+
+.screen{display:none;min-height:100dvh;flex-direction:column;padding:0 0 env(safe-area-inset-bottom);}
+.screen.active{display:flex;}
+
+/* TEST BUTTON */
+#testBtn{position:fixed;top:12px;right:12px;z-index:9999;background:rgba(155,92,246,0.9);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;letter-spacing:.5px;backdrop-filter:blur(8px);}
+
+/* ---- ONBOARDING ---- */
+#onboarding{justify-content:center;align-items:center;padding:2rem 1.5rem;gap:2rem;}
+.logo-wrap{text-align:center;}
+.logo-wrap h1{font-size:clamp(2.5rem,10vw,3.5rem);background:linear-gradient(135deg,#c084fc,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-1px;}
+.logo-wrap p{color:var(--text2);font-size:.9rem;margin-top:.25rem;}
+.onboard-card{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:1.75rem;width:100%;max-width:400px;}
+.onboard-card h2{font-size:1.1rem;color:var(--text2);margin-bottom:1.25rem;font-weight:500;}
+.field{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem;}
+.field label{font-size:.8rem;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;}
+.field input{background:var(--bg2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:1rem;padding:.875rem 1rem;outline:none;transition:border-color .2s;}
+.field input:focus{border-color:var(--purple);}
+.field input::placeholder{color:var(--text3);}
+.divider{display:flex;align-items:center;gap:.75rem;margin:1.25rem 0;}
+.divider span{color:var(--text3);font-size:.8rem;}
+.divider:before,.divider:after{content:'';flex:1;height:1px;background:var(--border2);}
+.room-opts{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:.5rem;border:none;border-radius:12px;cursor:pointer;font-family:'Space Grotesk',sans-serif;font-weight:600;transition:all .15s;user-select:none;}
+.btn-primary{background:var(--purple);color:#fff;padding:.875rem 1.5rem;font-size:.95rem;width:100%;}
+.btn-primary:active{transform:scale(.97);background:var(--purple2);}
+.btn-secondary{background:var(--bg2);color:var(--text2);border:1px solid var(--border);padding:.875rem 1rem;font-size:.85rem;}
+.btn-secondary:active{transform:scale(.97);}
+
+/* ---- HOME ---- */
+#home{padding:0;}
+.home-header{padding:1.25rem 1.25rem 0;display:flex;flex-direction:column;gap:.75rem;}
+.header-top{display:flex;align-items:center;justify-content:space-between;}
+.player-info h2{font-size:1.25rem;font-weight:700;}
+.player-info p{font-size:.8rem;color:var(--text3);}
+.room-banner{background:var(--bg3);border:1px solid var(--border);border-radius:14px;padding:.875rem 1rem;display:flex;align-items:center;justify-content:space-between;}
+.room-code{font-size:1.2rem;font-weight:700;color:var(--purple);letter-spacing:2px;}
+.btn-copy{background:var(--purple-dim);color:var(--purple);border:none;border-radius:8px;padding:.45rem .875rem;font-family:'Space Grotesk',sans-serif;font-size:.75rem;font-weight:600;cursor:pointer;transition:all .15s;}
+.home-body{flex:1;padding:1.25rem;display:flex;flex-direction:column;gap:1.25rem;}
+
+/* Tasto Reset Scolpito */
+.btn-reset-cache{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2);padding:.5rem .75rem;font-size:.75rem;border-radius:8px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:.25rem;align-self:flex-start;}
+.btn-reset-cache:active{background:rgba(239,68,68,0.2);}
+
+/* Setup Giocatori */
+.setup-container{background:var(--bg3);border:1px solid var(--border);border-radius:16px;padding:1rem;}
+.setup-title{font-size:.8rem;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.75rem;font-weight:700;}
+.player-row-input{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:.75rem;margin-bottom:.5rem;}
+.player-num-tag{background:var(--bg2);border:1px solid var(--border2);width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--purple);}
+
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:.875rem;}
+.mode-card{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:1.25rem;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:all .2s;min-height:140px;}
+.mode-card:active{transform:scale(.97);border-color:var(--purple);}
+.mode-card .icon{font-size:2rem;margin-bottom:.5rem;}
+.mode-card h3{font-size:.95rem;font-weight:700;line-height:1.3;}
+.mode-card p{font-size:.7rem;color:var(--text3);margin-top:.35rem;}
+.mode-card .arrow{color:var(--purple);font-size:1.2rem;align-self:flex-end;}
+
+/* ---- CHALLENGE ---- */
+#challenge{padding:0;}
+.challenge-top{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.25rem .5rem;}
+.back-btn{background:var(--bg3);border:1px solid var(--border);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:1.2rem;}
+.mode-tag{background:var(--purple-dim);color:var(--purple);border-radius:50px;padding:.3rem .875rem;font-size:.75rem;font-weight:600;}
+.challenge-body{flex:1;padding:1.25rem;display:flex;flex-direction:column;gap:1.25rem;}
+.timer-wrap{display:flex;flex-direction:column;align-items:center;gap:.5rem;}
+.timer-ring{position:relative;width:90px;height:90px;}
+.timer-ring svg{transform:rotate(-90deg);}
+.timer-ring circle.bg{fill:none;stroke:var(--bg3);stroke-width:5;}
+.timer-ring circle.prog{fill:none;stroke:var(--purple);stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .9s linear,stroke .5s;}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;}
+
+/* Lista Sfide Dynamic */
+.challenges-list-box{display:flex;flex-direction:column;gap:.75rem;width:100%;}
+.individual-challenge-card{background:var(--bg3);border:1px solid var(--border2);border-radius:14px;padding:.875rem 1rem;display:flex;flex-direction:column;gap:.25rem;position:relative;}
+.individual-challenge-card.done{border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.02);opacity:0.6;}
+.ich-name{font-size:.8rem;color:var(--purple);font-weight:700;text-transform:uppercase;letter-spacing:.5px;}
+.ich-text{font-size:.95rem;font-weight:500;line-height:1.4;}
+
+/* Buzzer Grid */
+.buzzer-title{text-align:center;font-size:.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:.5rem;}
+.buzzer-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;width:100%;}
+.buzzer-btn{background:linear-gradient(135deg, var(--purple), var(--purple2));color:#fff;border:none;border-radius:16px;padding:1.25rem 1rem;font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;box-shadow:0 4px 12px rgba(155,92,246,0.2);transition:all .1s;}
+.buzzer-btn:active{transform:scale(.95);}
+.buzzer-btn span.sub{font-family:'Space Grotesk',sans-serif;font-size:.65rem;opacity:.8;font-weight:400;text-transform:uppercase;}
+
+/* Preview area Foto/Video */
+.photo-preview{background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:1rem;text-align:center;width:100%;}
+.media-container{background:var(--bg2);border-radius:12px;overflow:hidden;border:1px solid var(--border2);max-height:260px;display:flex;align-items:center;justify-content:center;margin-bottom:.75rem;}
+.media-container img, .media-container video{width:100%;max-height:260px;display:none;object-fit:cover;}
+.photo-overlay{font-size:.8rem;color:var(--text2);margin-bottom:.2rem;}
+
+.vote-section{flex-direction:column;gap:.75rem;width:100%;}
+.vote-section p{text-align:center;font-size:.95rem;color:var(--text2);font-weight:500;}
+.vote-btns{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+.btn-approve{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3);border-radius:14px;padding:1rem;font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.25rem;}
+.btn-reject{background:rgba(239,68,68,.12);color:var(--red);border:1px solid rgba(239,68,68,.3);border-radius:14px;padding:1rem;font-family:'Space Grotesk',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:.25rem;}
+
+/* ---- RESULTS ---- */
+#results{padding:0;}
+.results-header{padding:1.5rem 1.25rem 1rem;text-align:center;}
+.results-header h2{font-size:1.5rem;margin-bottom:.25rem;}
+.results-header p{font-size:.85rem;color:var(--text3);}
+.results-body{flex:1;padding:0 1.25rem 1.25rem;display:flex;flex-direction:column;gap:1.25rem;}
+.podium-wrap{display:flex;align-items:flex-end;justify-content:center;gap:.5rem;padding:.5rem 0;min-height:140px;}
+.podium-item{display:flex;flex-direction:column;align-items:center;gap:.4rem;flex:1;}
+.podium-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;border:2px solid transparent;}
+.podium-item:nth-child(2) .podium-avatar{width:56px;height:56px;background:var(--purple);border-color:rgba(155,92,246,.5);font-size:1.1rem;}
+.podium-item:nth-child(1) .podium-avatar,.podium-item:nth-child(3) .podium-avatar{width:46px;height:46px;background:var(--bg3);border-color:var(--border);}
+.podium-name{font-size:.75rem;color:var(--text2);text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.podium-xp{font-size:.75rem;color:var(--purple);font-weight:700;}
+.podium-bar{border-radius:6px 6px 0 0;width:100%;}
+.podium-item:nth-child(2) .podium-bar{background:var(--purple);height:60px;}
+.podium-item:nth-child(1) .podium-bar{background:var(--bg3);border:1px solid var(--border);height:40px;}
+.podium-item:nth-child(3) .podium-bar{background:var(--bg3);border:1px solid var(--border);height:25px;}
+
+.leaderboard{display:flex;flex-direction:column;gap:.5rem;}
+.lb-row{background:var(--bg3);border:1px solid var(--border2);border-radius:12px;padding:.875rem 1rem;display:flex;align-items:center;gap:.875rem;}
+.lb-row.first{border-color:var(--border);background:var(--purple-dim);}
+.lb-rank{font-family:'Syne',sans-serif;font-size:1rem;font-weight:800;color:var(--text3);width:24px;text-align:center;}
+.lb-row.first .lb-rank{color:var(--purple);}
+.lb-name{flex:1;font-size:.9rem;font-weight:600;}
+.lb-pts{font-weight:700;color:var(--purple);}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 20px);left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:.6rem 1.25rem;font-size:.85rem;color:var(--text);white-space:nowrap;opacity:0;transition:all .3s;z-index:9998;pointer-events:none;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- TEST BUTTON -->
+<button id="testBtn" onclick="runTest()">⚡ TEST</button>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SCREEN: ONBOARDING -->
+<div class="screen active" id="onboarding">
+  <div class="logo-wrap">
+    <h1>BetBuddy</h1>
+    <p>Sfide pazze dal vivo</p>
+  </div>
+  <div class="onboard-card">
+    <div id="nameStep">
+      <h2>Come ti chiami?</h2>
+      <div class="field">
+        <label>Il tuo nome</label>
+        <input type="text" id="nameInput" placeholder="Es. Marco 🔥" maxlength="20">
+      </div>
+      <button class="btn btn-primary" onclick="saveName()">Avanti →</button>
+    </div>
+    
+    <div id="roomStep" style="display:none;">
+      <h2>Scegli la modalità</h2>
+      <div class="room-opts">
+        <button class="btn btn-secondary" style="flex-direction:column;gap:.25rem;height:80px;" onclick="createRoom()">
+          <span style="font-size:1.4rem;">🎲</span>
+          <span>Crea Stanza</span>
+        </button>
+        <button class="btn btn-secondary" style="flex-direction:column;gap:.25rem;height:80px;" onclick="showJoinRoom()">
+          <span style="font-size:1.4rem;">🔗</span>
+          <span>Entra in Stanza</span>
+        </button>
+      </div>
+      
+      <div class="divider"><span>Oppure gioca passandovi il telefono</span></div>
+      <button class="btn btn-primary" onclick="startSinglePhoneMode()" style="background:var(--bg2); border:1px solid var(--border); color:var(--text2);">📱 Telefono Singolo (Buzzer)</button>
+
+      <div id="joinBox" style="display:none;margin-top:1rem;">
+        <div class="field">
+          <label>Codice stanza degli amici</label>
+          <input type="text" id="roomCodeInput" placeholder="Es. A89B2" maxlength="5" style="text-transform:uppercase;letter-spacing:3px;text-align:center;font-size:1.2rem;">
+        </div>
+        <button class="btn btn-primary" onclick="joinRoom()">Connettiti</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: HOME -->
+<div class="screen" id="home">
+  <div class="home-header">
+    <div class="header-top">
+      <div class="player-info">
+        <h2 id="homeName">Giocatore</h2>
+        <p id="gameModeSub">Modalità di gioco impostata</p>
+      </div>
+    </div>
+    <div class="room-banner" id="roomBannerBox">
+      <div>
+        <div style="font-size:.7rem;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:.2rem;">Codice Stanza Attiva</div>
+        <div class="room-code" id="homeRoom">#LIVE</div>
+      </div>
+      <button class="btn-copy" id="inviteBtn" onclick="copyInviteLink()">📲 Invita amici</button>
+    </div>
+  </div>
+  
+  <div class="home-body">
+    <!-- Tasto Reset Richiesto per svuotare la Cache e tornare indietro -->
+    <button class="btn-reset-cache" onclick="resetAppCache()">❌ Esci / Cambia Modalità</button>
+
+    <!-- Configurazione Giocatori Comitiva -->
+    <div class="setup-container" id="singlePhoneSetup" style="display:none;">
+      <div class="setup-title">Iscrivi la Comitiva (2-6 Giocatori)</div>
+      <div id="playersInputsGrid">
+        <div class="player-row-input">
+          <div class="player-num-tag">1</div>
+          <input type="text" class="comitiva-name-input" placeholder="Nome Giocatore 1">
+        </div>
+        <div class="player-row-input">
+          <div class="player-num-tag">2</div>
+          <input type="text" class="comitiva-name-input" placeholder="Nome Giocatore 2">
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="addPlayerField()" style="background:var(--bg2); color:var(--text2); font-size:.8rem; padding:.5rem; width:100%; border:1px dashed var(--border); margin-top:.5rem; border-radius:8px;">+ Aggiungi Giocatore</button>
+    </div>
+
+    <div style="font-size:.8rem;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;">Scegli l'ambiente</div>
+    <div class="mode-cards">
+      <div class="mode-card" onclick="startPlayMode('casa')">
+        <div>
+          <div class="icon">🏠</div>
+          <h3>Sfida a Casa</h3>
+          <p>Dizionario espanso: oggetti e flessioni</p>
+        </div>
+        <div class="arrow">→</div>
+      </div>
+      <div class="mode-card" onclick="startPlayMode('fuori')">
+        <div>
+          <div class="icon">🌆</div>
+          <h3>Sfida Fuori</h3>
+          <p>Prove pazze in mezzo alla strada</p>
+        </div>
+        <div class="arrow">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN: CHALLENGE -->
+<div class="screen" id="challenge">
+  <div class="challenge-top">
+    <div class="back-btn" onclick="goHome()">←</div>
+    <div class="mode-tag" id="modeTag">GIOCO IN CORSO</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="challenge-body">
+    
+    <!-- Timer -->
+    <div class="timer-wrap" id="timerSection">
+      <div class="timer-ring">
+        <svg width="90" height="90" viewBox="0 0 90 90">
+          <circle class="bg" cx="45" cy="45" r="40"/>
+          <circle class="prog" id="timerRing" cx="45" cy="45" r="40" stroke-dasharray="251.3" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num" id="timerNum">2:00</div>
+      </div>
+    </div>
+
+    <!-- Lista di tutte le sfide generate -->
+    <div class="challenges-list-box" id="challengesListBox">
+      <!-- Inserite dinamicamente -->
+    </div>
+
+    <!-- Griglia dei Buzzer (Telefono Singolo) -->
+    <div id="buzzerZone" style="display:none;">
+      <div class="buzzer-title">Chi finisce per primo clicchi sul suo nome! 👇</div>
+      <div class="buzzer-grid" id="buzzerGrid" style="margin-top:.5rem;">
+        <!-- Inseriti dinamicamente -->
+      </div>
+    </div>
+
+    <!-- Pulsante Scatto (Telefono Multiplo / Individuale) -->
+    <button class="btn btn-primary" id="individualPhotoBtn" onclick="pressBuzzer(state.name)" style="display:none; padding:1.25rem; font-size:1.1rem; font-family:'Syne';">📸 REGISTRA LA MIA PROVA</button>
+
+    <!-- Area Acquisizione Foto/Video Reale -->
+    <div class="photo-preview" id="mediaPreviewArea" style="display:none;">
+      <div class="photo-overlay" id="currentBuzzerTitle">Registrazione Prova</div>
+      <input type="file" id="cameraInput" accept="image/*,video/*" capture="user" style="display:none;">
+      
+      <div class="media-container" onclick="triggerNativeCamera()" style="cursor:pointer; min-height:120px; border:2px dashed var(--border);">
+        <div id="mediaPlaceholder" style="color:var(--text3); font-size:.9rem; padding:1rem; text-align:center;">
+          <span style="font-size:2rem; display:block; margin-bottom:.25rem;">📸 / 🎥</span>
+          Tocca qui per scattare la Foto o registrare il Video Prova
+        </div>
+        <img id="realPhotoImg" src="" alt="Foto Prova">
+        <video id="realVideoPlayback" controls></video>
+      </div>
+
+      <div class="vote-section" id="voteSection" style="display:none;">
+        <p>La comitiva approva la prova dal vivo?</p>
+        <div class="vote-btns" style="margin-top:.5rem;">
+          <button class="btn-approve" onclick="castGroupVote(true)"><span>✅ APPROVA</span></button>
+          <button class="btn-reject" onclick="castGroupVote(false)"><span>❌ BOCCIA</span></button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SCREEN: RESULTS -->
+<div class="screen" id="results">
+  <div class="results-header">
+    <div style="font-size:2.5rem;margin-bottom:.5rem;">🏆</div>
+    <h2>Classifica Stanza</h2>
+    <p id="resultSubtitle">Punteggi salvati localmente</p>
+  </div>
+  <div class="results-body">
+    <div class="podium-wrap" id="podiumWrap"></div>
+    <div class="leaderboard" id="leaderboard"></div>
+    <div class="results-actions">
+      <button class="btn btn-primary" onclick="nextRound()">🔄 Prossimo Round</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== DIZIONARI ULTRA ESPANSI PER EVITARE RIPETIZIONI INDESIDERATE =====
+const WORDS = {
+  azioni_casa: [
+    'Fai di corsa 10 flessioni con','Bilancia sulla testa per 10 secondi','Indossa come se fosse un cappello',
+    'Fai 15 squat profondi tenendo in mano','Abbraccia e bacia affettuosamente','Metti in equilibrio perfetto sul naso',
+    'Usa come microfono cantando una canzone con','Cammina facendo un giro completo tenendo in bocca',
+    'Fai 5 saltelli su una gamba sola stringendo','Usa come scudo spaziale facendo la voce da robot con',
+    'Fai finta di suonare come una chitarra rock','Siediti sopra delicatamente senza romperlo/a',
+    'Fai finta di mangiarlo voracemente con la bocca aperta','Palleggia per tre volte consecutive usando',
+    'Fai un inchino teatrale e dichiara il tuo amore a','Usa come bende per fare la mummia con',
+    'Nascondi dietro la schiena e fai indovinare dove si trova','Gira su te stesso tre volte tenendo in alto',
+    'Fai finta che sia un neonato e cullalo cantando la ninnananna a','Stenditi a terra e usalo come cuscino'
+  ],
+  oggetti_casa: [
+    'un telecomando della TV','una scopa o uno straccio','un cuscino grande del divano','un rotolo intero di carta igienica',
+    'uno scolapasta di metallo o plastica','una cintura dei pantaloni','le ciabatte o scarpe di un tuo amico',
+    'una bottiglia d\'acqua completamente vuota','una spugnetta bagnata per i piatti','un cucchiaio grande da cucina',
+    'una padella o pentola piccola','un mazzo di chiavi di casa','un calzino spaiato pulito','un caricabatterie del telefono',
+    'un libro o una rivista pesante','un tubetto di dentifricio','un accendino o una scatola di fiammiferi',
+    'un bicicheere di plastica','una tazza da colazione','un frutto o verdura preso dal frigo'
+  ],
+  dettagli_casa: [
+    'mentre urli una poesia inventata al momento','in meno di 30 secondi cronometrati','usando rigorosamente solo la mano sinistra',
+    'con gli occhi completamente chiusi e bendati','cantando a squarciagola l\'inno nazionale','facendo una faccia serissima e arrabbiata',
+    'imitando fedelmente la voce di un robot fantascientifico','facendo finta di essere al rallentatore estremo',
+    'parlando con un finto accento straniero assurdo','ridendo sguaiatamente senza un reale motivo',
+    'mentre salti continuamente sul posto','sussurrando come se stessi svelando un segreto di stato',
+    'imitando il verso disperato di una gallina','mantenendo una postura da perfetto soldato in parata',
+    'mentre piangi lacrime finte da attore di soap opera'
+  ],
+  azioni_fuori: [
+    'Fai 10 jumping jack ritmici di fianco a','Chiedi informazioni stradali assurde parlando come',
+    'Fai una sfilata di alta moda sfarzosa attorno a','Urla "SONO FINALMENTE LIBERO!" con le braccia al cielo vicino a',
+    'Fai finta di vendere con insistenza un oggetto immaginario a','Recita una poesia drammatica ad alta voce vicino a',
+    'Fai un inchino regale e teatrale fino a toccare terra davanti a','Sfida a braccio di ferro immaginario ed epico',
+    'Fai finta di essere completamente invisibile passando davanti a','Fai finta di scattare un selfie artistico ravvicinato con'
+  ],
+  oggetti_fuori: [
+    'un palo della luce pubblica','il semaforo pedonale più vicino','un cartello stradale dei lavori in corso',
+    'una bicicletta o un monopattino posteggiato','un cassonetto grande della spazzatura','una fontanella pubblica dell\'acqua',
+    'una panchina di legno libera','un cartello stradale di Stop o di precedenza'
+  ],
+  dettagli_fuori: [
+    'mentre canti una canzone pop a squarciagola','facendo una riverenza finale degna di un re','correndo velocemente in cerchio subito dopo',
+    'con un accento dialettale marcato e divertente','spiegando a tutti che è una penitenza obbligatoria','facendo il verso stridulo di un gabbiano marinaio'
+  ]
+};
+
+// ===== STATE =====
+let state = {
+  name: '', room: '', isSinglePhone: false, mode: 'casa',
+  players: [],
+  challengesGenerated: {},
+  timer: null, timerLeft: 120,
+  currentBuzzerPlayer: null,
+  approvedCountInRound: 0,
+  sessionScores: {} 
+};
+
+// ===== INIT & BLOCCO TASTO DESTRO NATIVO =====
+window.addEventListener('load', () => {
+  document.addEventListener('contextmenu', event => event.preventDefault());
+
+  const savedName = ls('bb_username_v2');
+  if (savedName) {
+    state.name = savedName;
+    document.getElementById('nameStep').style.display = 'none';
+    document.getElementById('roomStep').style.display = 'block';
+  }
+});
+
+function ls(k, v) {
+  if (v !== undefined) localStorage.setItem(k, v);
+  return localStorage.getItem(k);
+}
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+function genCode() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  return Array.from({length:5}, () => chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
+// ===== SELEZIONE MODALITÀ DA ONBOARDING =====
+function saveName() {
+  const n = document.getElementById('nameInput').value.trim();
+  if (!n) { toast('Inserisci il tuo nome!'); return; }
+  state.name = n;
+  ls('bb_username_v2', n);
+  document.getElementById('nameStep').style.display = 'none';
+  document.getElementById('roomStep').style.display = 'block';
+}
+
+function startSinglePhoneMode() {
+  state.isSinglePhone = true;
+  state.room = 'LOCALE';
+  showHome();
+}
+
+function createRoom() {
+  state.isSinglePhone = false;
+  state.room = genCode();
+  showHome();
+}
+
+function showJoinRoom() {
+  document.getElementById('joinBox').style.display = 'block';
+  document.getElementById('roomCodeInput').focus();
+}
+
+function joinRoom() {
+  const code = document.getElementById('roomCodeInput').value.trim().toUpperCase();
+  if (code.length < 3) { toast('Codice troppo corto!'); return; }
+  state.isSinglePhone = false;
+  state.room = code;
+  showHome();
+}
+
+// Funzione speciale per cancellare la memoria (Cache) e sbloccare le schermate
+function resetAppCache() {
+  localStorage.removeItem('bb_username_v2');
+  state.name = '';
+  state.room = '';
+  state.isSinglePhone = false;
+  state.players = [];
+  state.sessionScores = {};
+  
+  // Resetta i campi grafici
+  document.getElementById('nameInput').value = '';
+  document.getElementById('roomCodeInput').value = '';
+  document.getElementById('joinBox').style.display = 'none';
+  
+  // Riporta all'onboarding iniziale per ripartire da zero
+  document.getElementById('nameStep').style.display = 'block';
+  document.getElementById('roomStep').style.display = 'none';
+  show('onboarding');
+  toast('🔄 Sessione azzerata! Scegli un nuovo nome o stanza.');
+}
+
+function showHome() {
+  document.getElementById('homeName').textContent = state.name;
+  
+  if(state.isSinglePhone) {
+    document.getElementById('gameModeSub').textContent = 'Modalità Telefono Singolo (Buzzer)';
+    document.getElementById('roomBannerBox').style.display = 'none';
+    document.getElementById('singlePhoneSetup').style.display = 'block';
+  } else {
+    document.getElementById('gameModeSub').textContent = 'Modalità Telefoni Multipli';
+    document.getElementById('roomBannerBox').style.display = 'flex';
+    document.getElementById('homeRoom').textContent = '#' + state.room;
+    document.getElementById('singlePhoneSetup').style.display = 'none';
+  }
+  show('home');
+}
+
+function addPlayerField() {
+  const container = document.getElementById('playersInputsGrid');
+  const count = container.querySelectorAll('.player-row-input').length + 1;
+  if (count > 6) { toast('Massimo 6 giocatori!'); return; }
+  
+  const div = document.createElement('div');
+  div.className = 'player-row-input';
+  div.innerHTML = `
+    <div class="player-num-tag">${count}</div>
+    <input type="text" class="comitiva-name-input" placeholder="Nome Giocatore ${count}">
+  `;
+  container.appendChild(div);
+}
+
+function copyInviteLink() {
+  const text = `🎮 BetBuddy – Entra nella mia stanza!\nCodice Stanza: #${state.room}\nLink: ${location.origin}${location.pathname}`;
+  navigator.clipboard.writeText(text).then(() => toast('🔗 Link copiato! Mandalo agli altri telefoni'));
+}
+
+// ===== AVVIO GIOCO (DINAMICO SUI DIZIONARI ESPANSI) =====
+function startPlayMode(mode) {
+  state.mode = mode;
+  state.players = [];
+  state.challengesGenerated = {};
+  state.approvedCountInRound = 0;
+  state.currentBuzzerPlayer = null;
+
+  if (state.isSinglePhone) {
+    const inputs = document.querySelectorAll('.comitiva-name-input');
+    inputs.forEach(input => {
+      const val = input.value.trim();
+      if (val) state.players.push(val);
+    });
+    if (state.players.length < 2) {
+      toast('Inserisci almeno 2 giocatori per la comitiva!');
+      return;
+    }
+  } else {
+    state.players = [state.name];
+  }
+
+  state.players.forEach(p => {
+    if (state.sessionScores[p] === undefined) state.sessionScores[p] = 0;
+  });
+
+  const listContainer = document.getElementById('challengesListBox');
+  listContainer.innerHTML = '';
+
+  const azioni = mode === 'casa' ? WORDS.azioni_casa : WORDS.azioni_fuori;
+  const oggetti = mode === 'casa' ? WORDS.oggetti_casa : WORDS.oggetti_fuori;
+  const dettagli = mode === 'casa' ? WORDS.dettagli_casa : WORDS.dettagli_fuori;
+
+  let poolAzioni = [...azioni];
+  let poolOggetti = [...oggetti];
+  let poolDettagli = [...dettagli];
+
+  state.players.forEach(player => {
+    if (poolAzioni.length === 0) poolAzioni = [...azioni];
+    if (poolOggetti.length === 0) poolOggetti = [...oggetti];
+    if (poolDettagli.length === 0) poolDettagli = [...dettagli];
+
+    const idxA = Math.floor(Math.random() * poolAzioni.length);
+    const a = poolAzioni.splice(idxA, 1)[0];
+
+    const idxO = Math.floor(Math.random() * poolOggetti.length);
+    const o = poolOggetti.splice(idxO, 1)[0];
+
+    const idxD = Math.floor(Math.random() * poolDettagli.length);
+    const d = poolDettagli.splice(idxD, 1)[0];
+
+    const txt = `${a} ${o} ${d}`;
+    state.challengesGenerated[player] = txt;
+
+    const card = document.createElement('div');
+    card.className = 'individual-challenge-card';
+    card.id = `card-${player.replace(/\s+/g, '_')}`;
+    card.innerHTML = `
+      <div class="ich-name">${state.isSinglePhone ? player : 'LA TUA SFIDA'}</div>
+      <div class="ich-text">${txt}</div>
+    `;
+    listContainer.appendChild(card);
+  });
+
+  resetChallengeScreen();
+  
+  if (state.isSinglePhone) {
+    document.getElementById('buzzerZone').style.display = 'block';
+    document.getElementById('individualPhotoBtn').style.display = 'none';
+    buildBuzzerGrid();
+  } else {
+    document.getElementById('buzzerZone').style.display = 'none';
+    document.getElementById('individualPhotoBtn').style.display = 'block';
+  }
+
+  show('challenge');
+  startTimer();
+}
+
+function buildBuzzerGrid() {
+  const grid = document.getElementById('buzzerGrid');
+  grid.innerHTML = '';
+  state.players.forEach(player => {
+    const btn = document.createElement('button');
+    btn.className = 'buzzer-btn';
+    btn.id = `buzzer-${player.replace(/\s+/g, '_')}`;
+    btn.innerHTML = `<span>${player}</span><span class="sub">FINITO!</span>`;
+    btn.onclick = () => pressBuzzer(player);
+    grid.appendChild(btn);
+  });
+}
+
+function resetChallengeScreen() {
+  document.getElementById('timerSection').style.display = 'flex';
+  document.getElementById('challengesListBox').style.display = 'flex';
+  document.getElementById('mediaPreviewArea').style.display = 'none';
+  document.getElementById('voteSection').style.display = 'none';
+  document.getElementById('cameraInput').value = '';
+  document.getElementById('realPhotoImg').style.display = 'none';
+  document.getElementById('realVideoPlayback').style.display = 'none';
+  document.getElementById('mediaPlaceholder').style.display = 'block';
+  state.timerLeft = 120;
+  updateTimerUI(120);
+}
+
+function startTimer() {
+  clearInterval(state.timer);
+  state.timer = setInterval(() => {
+    state.timerLeft--;
+    updateTimerUI(state.timerLeft);
+    if (state.timerLeft <= 0) {
+      clearInterval(state.timer);
+      toast('⏰ Tempo scaduto!');
+      showResultsScreen();
+    }
+  }, 1000);
+}
+
+function updateTimerUI(s) {
+  const m = Math.floor(s/60);
+  const sec = s%60;
+  document.getElementById('timerNum').textContent = `${m}:${sec.toString().padStart(2,'0')}`;
+  const circ = 251.3;
+  const pct = s/120;
+  document.getElementById('timerRing').style.strokeDashoffset = circ * (1-pct);
+}
+
+function pressBuzzer(player) {
+  clearInterval(state.timer);
+  state.currentBuzzerPlayer = player;
+
+  document.getElementById('challengesListBox').style.display = 'none';
+  document.getElementById('buzzerZone').style.display = 'none';
+  document.getElementById('individualPhotoBtn').style.display = 'none';
+  document.getElementById('timerSection').style.display = 'none';
+  
+  document.getElementById('currentBuzzerTitle').innerHTML = state.isSinglePhone ? `Prova di <strong>${player}</strong>` : `Gira lo schermo e mostra la prova agli amici!`;
+  document.getElementById('mediaPreviewArea').style.display = 'block';
+}
+
+function triggerNativeCamera() {
+  document.getElementById('cameraInput').click();
+}
+
+document.getElementById('cameraInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const url = URL.createObjectURL(file);
+  document.getElementById('mediaPlaceholder').style.display = 'none';
+  
+  const imgElement = document.getElementById('realPhotoImg');
+  const videoElement = document.getElementById('realVideoPlayback');
+
+  if (file.type.startsWith('video/')) {
+    imgElement.style.display = 'none';
+    videoElement.src = url;
+    videoElement.style.display = 'block';
+    videoElement.load();
+    videoElement.play();
+  } else {
+    videoElement.style.display = 'none';
+    videoElement.src = url;
+    imgElement.style.display = 'block';
+  }
+  document.getElementById('voteSection').style.display = 'flex';
+});
+
+function castGroupVote(approved) {
+  const player = state.currentBuzzerPlayer;
+  
+  if (approved) {
+    state.approvedCountInRound++;
+    let pointsEarned = state.isSinglePhone ? (state.approvedCountInRound === 1 ? 100 : state.approvedCountInRound === 2 ? 50 : 25) : 50;
+
+    state.sessionScores[player] += pointsEarned;
+    toast(`✅ Convalidata! +${pointsEarned} XP`);
+    
+    const card = document.getElementById(`card-${player.replace(/\s+/g, '_')}`);
+    if (card) card.classList.add('done');
+  } else {
+    toast(`❌ Bocciato! 0 XP`);
+  }
+
+  if (state.isSinglePhone) {
+    const bzBtn = document.getElementById(`buzzer-${player.replace(/\s+/g, '_')}`);
+    if (bzBtn) bzBtn.remove();
+
+    const remainingBuzzers = document.getElementById('buzzerGrid').children.length;
+    if (remainingBuzzers === 0) {
+      showResultsScreen();
+    } else {
+      document.getElementById('mediaPreviewArea').style.display = 'none';
+      document.getElementById('voteSection').style.display = 'none';
+      document.getElementById('challengesListBox').style.display = 'flex';
+      document.getElementById('buzzerZone').style.display = 'block';
+      document.getElementById('timerSection').style.display = 'flex';
+      startTimer();
+    }
+  } else {
+    showResultsScreen();
+  }
+}
+
+// ===== SCHERMATA CLASSIFICA =====
+function showResultsScreen() {
+  clearInterval(state.timer);
+  const scores = Object.entries(state.sessionScores).sort((a,b) => b[1] - a[1]);
+
+  const podium = document.getElementById('podiumWrap');
+  const orderedPodium = [scores[1] || null, scores[0] || null, scores[2] || null];
+
+  podium.innerHTML = orderedPodium.map((s, idx) => {
+    if (!s) return `<div class="podium-item"><div class="podium-bar"></div></div>`;
+    return `
+      <div class="podium-item">
+        <div class="podium-avatar" style="${idx===1?'background:var(--purple);':''}">${s[0].slice(0,2).toUpperCase()}</div>
+        <div class="podium-name">${s[0]}</div>
+        <div class="podium-xp">${s[1]} XP</div>
+        <div class="podium-bar"></div>
+      </div>
+    `;
+  }).join('');
+
+  const lb = document.getElementById('leaderboard');
+  lb.innerHTML = scores.map((s, i) => `
+    <div class="lb-row${i===0?' first':''}">
+      <div class="lb-rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="lb-name">${s[0]}</div>
+      <div class="lb-pts">${s[1]} XP</div>
+    </div>
+  `).join('');
+
+  show('results');
+}
+
+function nextRound() { showHome(); }
+function goHome() { clearInterval(state.timer); showHome(); }
+
+// ===== STRUMENTO DI TEST =====
+function runTest() {
+  if (!state.name) state.name = 'TestBoy ⚡';
+  state.isSinglePhone = true;
+  showHome();
+  const container = document.getElementById('playersInputsGrid');
+  container.innerHTML = '';
+  ['Pippo 🦊', 'Pluto 👑', 'Minni ⚡'].forEach((n, idx) => {
+    const div = document.createElement('div');
+    div.className = 'player-row-input';
+    div.innerHTML = `<div class="player-num-tag">${idx+1}</div><input type="text" class="comitiva-name-input" value="${n}">`;
+      container.appendChild(div);
+  });
+  state.sessionScores = { 'Pippo 🦊': 100, 'Pluto 👑': 50, 'Minni ⚡': 25 };
+  toast('⚡ Modalità Test caricata!');
+}
+</script>
+</body>
+</html>
